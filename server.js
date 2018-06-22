@@ -63,6 +63,16 @@ router.get('/product/:id', (req, res) => {
 
 // ELIMINAR UN PRODUCTO
 router.post('/delete-product/:id', (req, res) => {
+    let id=req.params.id
+    let sql="DELETE FROM products WHERE id=?"    
+    conn.query(sql, [id], (err,result) => {
+        if(err) throw err
+        res.json({ 
+            status: 'success',
+            code: 200,
+            message: 'delete ' + result.affectedRows + ' rows'                
+        })     
+    })    
 })
 
 
