@@ -1,7 +1,8 @@
 const express = require('express'),
     app = express(),
     bodyParser = require('body-parser'),
-    mysql = require('mysql')
+    mysql = require('mysql'),
+    multer = require('multer')
 
 const conn = mysql.createConnection({
     host: 'localhost',
@@ -13,6 +14,29 @@ const conn = mysql.createConnection({
 app.use(bodyParser.urlencoded( { extended : true }))
 
 app.use(bodyParser.json())
+
+app.use('/api/public', express.static(__dirname + 'uploads'))
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, './upload')
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.originalname)
+    }
+})
+
+const upload = multer({
+    storage: storage,
+    fileFilter: (req, file, cb) =>{
+        if (file.mimetype !== 'image/png' || file.mimetype !== 'image/gif' || file.mimetype !== 'image/jpeg') {
+            req.fileValidationError = 'Error imagen';
+            return cb(null, false, new Error('Error imagen'));
+        } else {
+            cb(null, true);
+        }
+    }
+})
 
 const port = 8080
 
@@ -55,7 +79,7 @@ router.get('/product/:id', (req, res) => {
             res.json( { 
                 status: 'error',
                 code: 404,
-                message: 'No se ha encontrado ningun producto'                
+                message: 'Producto no encontrado'                
             })                        
         }        
     })
@@ -78,6 +102,31 @@ router.post('/delete-product/:id', (req, res) => {
 
 // ACTUALIZAR UN PRODUCTO
 router.post('/update-product/:id', (req, res) => {
+    let sql = "UPDATE products SET name = ?, description = ?, price = ?, image = ? WHERE id = ?"
+    let json = JSON.parse(req.body.json)
+    let values = [
+        json.name,
+        json.description,
+        json.price,
+        json.image,
+        req.params.id
+    ]
+    conn.query(sql, values, err => {
+        if (err) {
+            console.log(err)
+            res.json( { 
+                status: 'error',
+                code: 404,
+                message: 'El producto no se ha actualizado'                
+            })           
+        } else {
+            res.json( { 
+                status: 'success',
+                code: 200,
+                message: 'El producto se ha actualizado correctamente'                
+            })            
+        }
+    })    
 })
 
 // GUARDAR PRODUCTOS
@@ -91,19 +140,19 @@ router.post('/insert-product', (req, res) => {
         json.image
     ]
     
-    conn.query(sql, values, (err) => {
+    conn.query(sql, values, err => {
         if(err) {
             console.log(err)
             res.json( { 
                 status: 'error',
                 code: 404,
-                message: 'Producto NO se ha creado'                
+                message: 'El producto no se ha creado'                
             })
         } else {
             res.json( { 
                 status: 'success',
                 code: 200,
-                message: 'Producto creado correctamente'                
+                message: 'El producto se ha creado correctamente'                
             })
         } 
     })
@@ -113,7 +162,21 @@ router.post('/insert-product', (req, res) => {
 
 // SUBIR UNA IMAGEN A UN PRODUCTO
 router.post('/upload-file', (req, res) => {
-
+    upload(req, res, (err) => {
+        if(req.fileValidationError) {
+            res.json({
+                status: 'error',
+                code: 404,
+                message: 'Error al subir la imagen'
+            })
+        } else {
+            res.json({
+                status: 'success',
+                code: 200,
+                message: 'La imagen se ha subido'
+            })            
+        }
+    })
 })
 
 app.use('/api',router)
