@@ -51,7 +51,7 @@ router.get('/products', (req, res) => {
             res.json({ 
                 status: 'success',
                 code: 200,
-                message: rows                
+                data: rows                
             })     
         } else {
             res.json( { 
@@ -73,7 +73,7 @@ router.get('/product/:id', (req, res) => {
             res.json({ 
                 status: 'success',
                 code: 200,
-                message: row                
+                data: row                
             })     
         } else {
             res.json( { 
