@@ -15,32 +15,37 @@ app.use(bodyParser.urlencoded( { extended : true }))
 
 app.use(bodyParser.json())
 
-app.use('/api/public', express.static(__dirname + 'uploads'))
+const port = 8080
+
+const router = express.Router()
 
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, './upload')
+    destination: (req, file, next) => {
+        next(null, 'uploads')
     },
-    filename: (req, file, cb) => {
-        cb(null, file.originalname)
-    }
-})
-
-const upload = multer({
-    storage: storage,
-    fileFilter: (req, file, cb) =>{
-        if (file.mimetype !== 'image/png' || file.mimetype !== 'image/gif' || file.mimetype !== 'image/jpeg') {
-            req.fileValidationError = 'Error imagen';
-            return cb(null, false, new Error('Error imagen'));
+    filename: (req, file, next) => {
+        console.log(file)
+        const ext = file.mimetype.split('/')[1];
+        const filename = file.originalname.split('.')[0]
+        req.imageName = filename + '.' + ext
+        next(null, filename + '.' + ext)
+    },
+    fileFilter: (req, file, next) => {
+        if(!file){
+            next();
+        }
+        const image = file.mimetype.startsWith('/image')
+        if(image){
+            next(null, true)
         } else {
-            cb(null, true);
+            console.log("Este archivo no es una imagen")
+            return next()
         }
     }
 })
 
-const port = 8080
+const upload = multer({storage: storage})
 
-const router = express.Router()
 
 // LISTAR TODOS LOS PRODUCTOS
 router.get('/products', (req, res) => {
@@ -161,22 +166,13 @@ router.post('/insert-product', (req, res) => {
 
 
 // SUBIR UNA IMAGEN A UN PRODUCTO
-router.post('/upload-file', (req, res) => {
-    upload(req, res, (err) => {
-        if(req.fileValidationError) {
-            res.json({
-                status: 'error',
-                code: 404,
-                message: 'Error al subir la imagen'
-            })
-        } else {
-            res.json({
-                status: 'success',
-                code: 200,
-                message: 'La imagen se ha subido'
-            })            
-        }
-    })
+router.post('/upload-file', upload.single('uploads'), (req, res) => {    
+    res.json({
+        status: 'success',
+        code: 200,
+        message: 'La imagen se ha subido',
+        filename: req.imageName                 
+    })    
 })
 
 app.use('/api',router)
