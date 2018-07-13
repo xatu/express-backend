@@ -15,6 +15,8 @@ app.use(bodyParser.urlencoded( { extended : true }))
 
 app.use(bodyParser.json())
 
+app.use('/uploads', express.static('uploads'))
+
 const port = 8080
 
 const router = express.Router()
@@ -91,7 +93,7 @@ router.get('/product/:id', (req, res) => {
 })
 
 // ELIMINAR UN PRODUCTO
-router.post('/delete-product/:id', (req, res) => {
+router.get('/delete-product/:id', (req, res) => {
     let id=req.params.id
     let sql="DELETE FROM products WHERE id=?"    
     conn.query(sql, [id], (err,result) => {
