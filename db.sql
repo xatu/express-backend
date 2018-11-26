@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS curso_angular4;
-USE curso_angular4;
+CREATE DATABASE IF NOT EXISTS test_rafael;
+USE test_rafael;
 
 CREATE TABLE products(
 id			int(255) auto_increment not null,

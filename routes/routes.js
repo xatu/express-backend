@@ -25,7 +25,7 @@ router.get('/products', (req, res) => {
 })
 
 // DEVOLVER UN SOLO PRODUCTO
-router.get('/product/:id', (req, res) => {
+router.get('/products/:id', (req, res) => {
     let id=req.params.id
     let sql="SELECT * FROM products WHERE id=?"    
     conn.query(sql, [id], (err,row) => {
@@ -47,7 +47,7 @@ router.get('/product/:id', (req, res) => {
 })
 
 // ELIMINAR UN PRODUCTO
-router.get('/delete-product/:id', (req, res) => {
+router.delete('/products/:id', (req, res) => {
     let id=req.params.id
     let sql="DELETE FROM products WHERE id=?"    
     conn.query(sql, [id], (err,result) => {
@@ -62,7 +62,7 @@ router.get('/delete-product/:id', (req, res) => {
 
 
 // ACTUALIZAR UN PRODUCTO
-router.post('/update-product/:id', (req, res) => {
+router.put('/products/:id', (req, res) => {
     let sql = "UPDATE products SET name = ?, description = ?, price = ?, image = ? WHERE id = ?"
     let json = JSON.parse(req.body.json)
     let values = [
@@ -91,7 +91,7 @@ router.post('/update-product/:id', (req, res) => {
 })
 
 // GUARDAR PRODUCTOS
-router.post('/insert-product', (req, res) => {
+router.post('/products', (req, res) => {
     let sql = "INSERT INTO products (name, description, price, image) VALUES (?,?,?,?)"
     let json = JSON.parse(req.body.json)
     let values = [
@@ -120,7 +120,7 @@ router.post('/insert-product', (req, res) => {
 })    
 
 // SUBIR UNA IMAGEN A UN PRODUCTO
-router.post('/upload-file', upload.single('uploads'), (req, res) => {    
+router.post('/images', upload.single('uploads'), (req, res) => {    
     res.json({
         status: 'success',
         code: 200,
